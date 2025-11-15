@@ -59,45 +59,45 @@ const AttendancePage: React.FC = () => {
 
   if (isComplete) {
     return (
-      <div className="max-w-2xl mx-auto text-center space-y-8">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Check className="h-8 w-8 text-green-600" />
+      <div className="max-w-2xl mx-auto text-center space-y-6 sm:space-y-8">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-5 sm:p-8">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+            <Check className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Attendance Complete!</h2>
-          <p className="text-gray-600 mb-6">You have marked attendance for all students in {selectedSection}.</p>
-          
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-2xl font-bold text-blue-600">{sectionStudents.length}</p>
-              <p className="text-sm text-blue-600">Total</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Attendance Complete!</h2>
+          <p className="text-sm sm:text-base text-gray-600 mb-5 sm:mb-6">You have marked attendance for all students in {selectedSection}.</p>
+
+          <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-6">
+            <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+              <p className="text-xl sm:text-2xl font-bold text-blue-600">{sectionStudents.length}</p>
+              <p className="text-xs sm:text-sm text-blue-600">Total</p>
             </div>
-            <div className="bg-green-50 p-4 rounded-lg">
-              <p className="text-2xl font-bold text-green-600">{presentCount}</p>
-              <p className="text-sm text-green-600">Present</p>
+            <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
+              <p className="text-xl sm:text-2xl font-bold text-green-600">{presentCount}</p>
+              <p className="text-xs sm:text-sm text-green-600">Present</p>
             </div>
-            <div className="bg-red-50 p-4 rounded-lg">
-              <p className="text-2xl font-bold text-red-600">{absentCount}</p>
-              <p className="text-sm text-red-600">Absent</p>
+            <div className="bg-red-50 p-3 sm:p-4 rounded-lg">
+              <p className="text-xl sm:text-2xl font-bold text-red-600">{absentCount}</p>
+              <p className="text-xs sm:text-sm text-red-600">Absent</p>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <button
               onClick={() => {
                 setCurrentIndex(0);
                 setIsComplete(false);
               }}
-              className="flex items-center justify-center space-x-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors text-sm sm:text-base touch-manipulation"
             >
-              <RotateCcw className="h-5 w-5" />
+              <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Review Again</span>
             </button>
             <button
               onClick={handleSubmit}
-              className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 transition-all transform hover:scale-[1.02]"
+              className="flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 active:from-green-800 active:to-blue-800 transition-all transform active:scale-[0.98] text-sm sm:text-base touch-manipulation"
             >
-              <Check className="h-5 w-5" />
+              <Check className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Submit Attendance</span>
             </button>
           </div>
@@ -107,76 +107,76 @@ const AttendancePage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+      {/* Header - Mobile First */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <button
           onClick={() => navigate('/sections')}
-          className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+          className="flex items-center gap-1.5 sm:gap-2 text-gray-600 hover:text-gray-900 active:text-black transition-colors self-start touch-manipulation"
         >
-          <ArrowLeft className="h-5 w-5" />
-          <span>Back to Sections</span>
+          <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+          <span className="text-sm sm:text-base">Back to Sections</span>
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">{selectedSection} Attendance</h1>
-        <div className="text-right">
-          <p className="text-sm text-gray-600">
+        <h1 className="text-lg sm:text-2xl font-bold text-gray-900">{selectedSection} Attendance</h1>
+        <div className="text-left sm:text-right">
+          <p className="text-xs sm:text-sm text-gray-600">
             {processedStudents.length} of {sectionStudents.length} students
           </p>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow-md border border-gray-100">
-          <div className="flex items-center space-x-2 mb-1">
-            <Users className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-medium text-gray-600">Total</span>
+      {/* Stats - Mobile First Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow-md border border-gray-100">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+            <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 flex-shrink-0" />
+            <span className="text-xs sm:text-sm font-medium text-gray-600">Total</span>
           </div>
-          <p className="text-xl font-bold text-blue-600">{sectionStudents.length}</p>
+          <p className="text-lg sm:text-xl font-bold text-blue-600">{sectionStudents.length}</p>
         </div>
-        
-        <div className="bg-white p-4 rounded-lg shadow-md border border-gray-100">
-          <div className="flex items-center space-x-2 mb-1">
-            <UserCheck className="h-4 w-4 text-green-600" />
-            <span className="text-sm font-medium text-gray-600">Present</span>
+
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow-md border border-gray-100">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+            <UserCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 flex-shrink-0" />
+            <span className="text-xs sm:text-sm font-medium text-gray-600">Present</span>
           </div>
-          <p className="text-xl font-bold text-green-600">{presentCount}</p>
+          <p className="text-lg sm:text-xl font-bold text-green-600">{presentCount}</p>
         </div>
-        
-        <div className="bg-white p-4 rounded-lg shadow-md border border-gray-100">
-          <div className="flex items-center space-x-2 mb-1">
-            <UserX className="h-4 w-4 text-red-600" />
-            <span className="text-sm font-medium text-gray-600">Absent</span>
+
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow-md border border-gray-100">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+            <UserX className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-600 flex-shrink-0" />
+            <span className="text-xs sm:text-sm font-medium text-gray-600">Absent</span>
           </div>
-          <p className="text-xl font-bold text-red-600">{absentCount}</p>
+          <p className="text-lg sm:text-xl font-bold text-red-600">{absentCount}</p>
         </div>
-        
-        <div className="bg-white p-4 rounded-lg shadow-md border border-gray-100">
-          <div className="flex items-center space-x-2 mb-1">
-            <Users className="h-4 w-4 text-purple-600" />
-            <span className="text-sm font-medium text-gray-600">Remaining</span>
+
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow-md border border-gray-100">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+            <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-600 flex-shrink-0" />
+            <span className="text-xs sm:text-sm font-medium text-gray-600">Remaining</span>
           </div>
-          <p className="text-xl font-bold text-purple-600">{remainingCount}</p>
+          <p className="text-lg sm:text-xl font-bold text-purple-600">{remainingCount}</p>
         </div>
       </div>
 
-      {/* Progress Bar */}
-      <div className="bg-white p-4 rounded-lg shadow-md">
-        <div className="flex justify-between text-sm text-gray-600 mb-2">
+      {/* Progress Bar - Mobile First */}
+      <div className="bg-white p-3 sm:p-4 rounded-lg shadow-md">
+        <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-1.5 sm:mb-2">
           <span>Progress</span>
           <span>{Math.round((processedStudents.length / sectionStudents.length) * 100)}%</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-3">
+        <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3">
           <div
-            className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-300"
+            className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 sm:h-3 rounded-full transition-all duration-300"
             style={{ width: `${(processedStudents.length / sectionStudents.length) * 100}%` }}
           ></div>
         </div>
       </div>
 
-      {/* Card Stack */}
-      <div className="relative h-96 flex justify-center items-center">
-        <div className="relative w-80 h-80">
+      {/* Card Stack - Mobile First Responsive */}
+      <div className="relative h-[400px] sm:h-96 flex justify-center items-center">
+        <div className="relative w-full max-w-[280px] sm:max-w-[320px] md:w-80 h-[360px] sm:h-80">
           {sectionStudents.map((student, index) => {
             const isVisible = index >= currentIndex && index < currentIndex + 3;
             const zIndex = sectionStudents.length - index;
@@ -193,34 +193,34 @@ const AttendancePage: React.FC = () => {
                 className="absolute inset-0"
               >
                 <div
-                  className="w-full h-full bg-white rounded-2xl shadow-xl border border-gray-100 p-8 flex flex-col justify-center items-center cursor-pointer select-none transition-transform duration-200"
+                  className="w-full h-full bg-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-100 p-5 sm:p-8 flex flex-col justify-center items-center cursor-pointer select-none transition-transform duration-200 touch-manipulation"
                   style={{
                     zIndex,
                     transform: `scale(${scale}) translateY(${translateY}px)`,
                   }}
                 >
-                  <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-4">
-                    <span className="text-2xl font-bold text-white">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-3 sm:mb-4">
+                    <span className="text-xl sm:text-2xl font-bold text-white">
                       {student.name.split(' ').map(n => n[0]).join('')}
                     </span>
                   </div>
-                  
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2 text-center">{student.name}</h3>
-                  <p className="text-gray-600 mb-6">Roll No: {student.rollNumber}</p>
-                  
-                  <div className="flex space-x-4">
+
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1.5 sm:mb-2 text-center px-2">{student.name}</h3>
+                  <p className="text-sm sm:text-base text-gray-600 mb-5 sm:mb-6">Roll No: {student.rollNumber}</p>
+
+                  <div className="flex gap-3 sm:gap-4">
                     <button
                       onClick={() => handleButtonClick(student.id, 'absent')}
-                      className="flex items-center space-x-2 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors transform hover:scale-105 active:scale-95"
+                      className="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 active:bg-red-700 transition-colors transform active:scale-95 text-sm sm:text-base touch-manipulation"
                     >
-                      <X className="h-5 w-5" />
+                      <X className="h-4 w-4 sm:h-5 sm:w-5" />
                       <span>Absent</span>
                     </button>
                     <button
                       onClick={() => handleButtonClick(student.id, 'present')}
-                      className="flex items-center space-x-2 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors transform hover:scale-105 active:scale-95"
+                      className="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 active:bg-green-700 transition-colors transform active:scale-95 text-sm sm:text-base touch-manipulation"
                     >
-                      <Check className="h-5 w-5" />
+                      <Check className="h-4 w-4 sm:h-5 sm:w-5" />
                       <span>Present</span>
                     </button>
                   </div>
@@ -228,19 +228,19 @@ const AttendancePage: React.FC = () => {
               </TinderCard>
             );
           })}
-          
+
           {currentIndex >= sectionStudents.length && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <p className="text-gray-500 text-lg">All students processed!</p>
+              <p className="text-gray-500 text-base sm:text-lg">All students processed!</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Instructions */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p className="text-blue-800 text-center">
-          <strong>Swipe right</strong> for Present or <strong>swipe left</strong> for Absent. 
+      {/* Instructions - Mobile First */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+        <p className="text-blue-800 text-center text-xs sm:text-sm">
+          <strong>Swipe right</strong> for Present or <strong>swipe left</strong> for Absent.
           You can also use the buttons below each card.
         </p>
       </div>
