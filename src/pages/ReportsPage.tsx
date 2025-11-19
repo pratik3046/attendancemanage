@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useAttendanceStore } from '../store/attendanceStore';
-import { format } from 'date-fns';
 import { Calendar, Users, UserCheck, UserX, Edit3, Check, X } from 'lucide-react';
 
 const ReportsPage: React.FC = () => {
-  const { attendanceSessions, students, updateAttendanceStatus } = useAttendanceStore();
+  const { attendanceSessions, students, updateAttendanceStatus, isDarkMode } = useAttendanceStore();
   const [selectedSession, setSelectedSession] = useState<string>('');
 
   const session = attendanceSessions.find(s => s.id === selectedSession) || attendanceSessions[attendanceSessions.length - 1];
@@ -30,11 +29,11 @@ const ReportsPage: React.FC = () => {
   if (attendanceSessions.length === 0) {
     return (
       <div className="text-center py-8 sm:py-12">
-        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+        <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 ${isDarkMode ? 'bg-slate-700' : 'bg-gray-100'}`}>
           <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
         </div>
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1.5 sm:mb-2">No Attendance Records</h2>
-        <p className="text-sm sm:text-base text-gray-600">Take attendance first to see reports here.</p>
+        <h2 className={`text-lg sm:text-xl font-semibold mb-1.5 sm:mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>No Attendance Records</h2>
+        <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Take attendance first to see reports here.</p>
       </div>
     );
   }
@@ -44,15 +43,19 @@ const ReportsPage: React.FC = () => {
       {/* Header - Mobile First */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Attendance Reports</h1>
-          <p className="text-sm sm:text-base text-gray-600">View and manage attendance records</p>
+          <h1 className={`text-2xl sm:text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Attendance Reports</h1>
+          <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>View and manage attendance records</p>
         </div>
 
         {attendanceSessions.length > 1 && (
           <select
             value={selectedSession}
             onChange={(e) => setSelectedSession(e.target.value)}
-            className="block w-full sm:w-64 px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 touch-manipulation"
+            className={`block w-full sm:w-64 px-3 py-2 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 touch-manipulation ${
+              isDarkMode 
+                ? 'bg-slate-800 border-slate-600 text-white' 
+                : 'bg-white border-gray-300 text-gray-900'
+            }`}
           >
             <option value="">Latest Session</option>
             {attendanceSessions.slice().reverse().map((s) => (
@@ -67,11 +70,13 @@ const ReportsPage: React.FC = () => {
       {session && (
         <>
           {/* Session Summary - Mobile First */}
-          <div className="bg-white rounded-lg sm:rounded-xl shadow-lg p-4 sm:p-6 border border-gray-100">
+          <div className={`rounded-lg sm:rounded-xl shadow-lg p-4 sm:p-6 border ${
+            isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-100'
+          }`}>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 sm:mb-6">
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900">{session.section}</h2>
-                <p className="text-sm sm:text-base text-gray-600">
+                <h2 className={`text-lg sm:text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{session.section}</h2>
+                <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   {session.date} at {session.time}
                 </p>
               </div>
@@ -79,17 +84,17 @@ const ReportsPage: React.FC = () => {
                 <div className="flex items-center gap-3 sm:gap-4">
                   <div className="text-center">
                     <p className="text-xl sm:text-2xl font-bold text-green-600">{session.presentCount}</p>
-                    <p className="text-xs sm:text-sm text-gray-600">Present</p>
+                    <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Present</p>
                   </div>
                   <div className="text-center">
                     <p className="text-xl sm:text-2xl font-bold text-red-600">{session.absentCount}</p>
-                    <p className="text-xs sm:text-sm text-gray-600">Absent</p>
+                    <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Absent</p>
                   </div>
                   <div className="text-center">
                     <p className="text-xl sm:text-2xl font-bold text-blue-600">
                       {Math.round((session.presentCount / session.totalStudents) * 100)}%
                     </p>
-                    <p className="text-xs sm:text-sm text-gray-600">Rate</p>
+                    <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Rate</p>
                   </div>
                 </div>
               </div>
@@ -97,11 +102,11 @@ const ReportsPage: React.FC = () => {
 
             {/* Visual Progress */}
             <div className="space-y-1.5 sm:space-y-2">
-              <div className="flex justify-between text-xs sm:text-sm text-gray-600">
+              <div className={`flex justify-between text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                 <span>Attendance Overview</span>
                 <span>{session.presentCount}/{session.totalStudents} students present</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3">
+              <div className={`w-full rounded-full h-2 sm:h-3 ${isDarkMode ? 'bg-slate-700' : 'bg-gray-200'}`}>
                 <div
                   className="bg-gradient-to-r from-green-500 to-blue-500 h-2 sm:h-3 rounded-full transition-all duration-500"
                   style={{ width: `${(session.presentCount / session.totalStudents) * 100}%` }}
@@ -113,7 +118,9 @@ const ReportsPage: React.FC = () => {
           {/* Student Lists - Mobile First */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Present Students */}
-            <div className="bg-white rounded-lg sm:rounded-xl shadow-lg border border-gray-100">
+            <div className={`rounded-lg sm:rounded-xl shadow-lg border ${
+              isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-100'
+            }`}>
               <div className="p-3 sm:p-4 border-b border-gray-200 bg-green-50 rounded-t-lg sm:rounded-t-xl">
                 <div className="flex items-center gap-2">
                   <UserCheck className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
@@ -124,7 +131,7 @@ const ReportsPage: React.FC = () => {
               </div>
               <div className="p-3 sm:p-4 max-h-[400px] overflow-y-auto">
                 {session.records.filter(r => r.status === 'present').length === 0 ? (
-                  <p className="text-gray-500 text-center py-4 text-sm sm:text-base">No students marked present</p>
+                  <p className={`text-center py-4 text-sm sm:text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>No students marked present</p>
                 ) : (
                   <div className="space-y-2 sm:space-y-3">
                     {session.records
@@ -154,7 +161,9 @@ const ReportsPage: React.FC = () => {
             </div>
 
             {/* Absent Students */}
-            <div className="bg-white rounded-lg sm:rounded-xl shadow-lg border border-gray-100">
+            <div className={`rounded-lg sm:rounded-xl shadow-lg border ${
+              isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-100'
+            }`}>
               <div className="p-3 sm:p-4 border-b border-gray-200 bg-red-50 rounded-t-lg sm:rounded-t-xl">
                 <div className="flex items-center gap-2">
                   <UserX className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
@@ -165,7 +174,7 @@ const ReportsPage: React.FC = () => {
               </div>
               <div className="p-3 sm:p-4 max-h-[400px] overflow-y-auto">
                 {session.records.filter(r => r.status === 'absent').length === 0 ? (
-                  <p className="text-gray-500 text-center py-4 text-sm sm:text-base">All students present!</p>
+                  <p className={`text-center py-4 text-sm sm:text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>All students present!</p>
                 ) : (
                   <div className="space-y-2 sm:space-y-3">
                     {session.records
@@ -205,30 +214,32 @@ const ReportsPage: React.FC = () => {
           </div>
 
           {/* Additional Stats - Mobile First */}
-          <div className="bg-white rounded-lg sm:rounded-xl shadow-lg p-4 sm:p-6 border border-gray-100">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Session Statistics</h3>
+          <div className={`rounded-lg sm:rounded-xl shadow-lg p-4 sm:p-6 border ${
+            isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-100'
+          }`}>
+            <h3 className={`text-base sm:text-lg font-semibold mb-3 sm:mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Session Statistics</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-              <div className="text-center p-3 sm:p-4 bg-blue-50 rounded-lg">
+              <div className={`text-center p-3 sm:p-4 rounded-lg ${isDarkMode ? 'bg-blue-500/20' : 'bg-blue-50'}`}>
                 <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 mx-auto mb-1.5 sm:mb-2" />
                 <p className="text-xl sm:text-2xl font-bold text-blue-600">{session.totalStudents}</p>
-                <p className="text-xs sm:text-sm text-gray-600">Total Students</p>
+                <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Total Students</p>
               </div>
-              <div className="text-center p-3 sm:p-4 bg-green-50 rounded-lg">
+              <div className={`text-center p-3 sm:p-4 rounded-lg ${isDarkMode ? 'bg-green-500/20' : 'bg-green-50'}`}>
                 <UserCheck className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 mx-auto mb-1.5 sm:mb-2" />
                 <p className="text-xl sm:text-2xl font-bold text-green-600">{session.presentCount}</p>
-                <p className="text-xs sm:text-sm text-gray-600">Present</p>
+                <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Present</p>
               </div>
-              <div className="text-center p-3 sm:p-4 bg-red-50 rounded-lg">
+              <div className={`text-center p-3 sm:p-4 rounded-lg ${isDarkMode ? 'bg-red-500/20' : 'bg-red-50'}`}>
                 <UserX className="h-6 w-6 sm:h-8 sm:w-8 text-red-600 mx-auto mb-1.5 sm:mb-2" />
                 <p className="text-xl sm:text-2xl font-bold text-red-600">{session.absentCount}</p>
-                <p className="text-xs sm:text-sm text-gray-600">Absent</p>
+                <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Absent</p>
               </div>
-              <div className="text-center p-3 sm:p-4 bg-purple-50 rounded-lg">
+              <div className={`text-center p-3 sm:p-4 rounded-lg ${isDarkMode ? 'bg-purple-500/20' : 'bg-purple-50'}`}>
                 <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600 mx-auto mb-1.5 sm:mb-2" />
                 <p className="text-xl sm:text-2xl font-bold text-purple-600">
                   {Math.round((session.presentCount / session.totalStudents) * 100)}%
                 </p>
-                <p className="text-xs sm:text-sm text-gray-600">Attendance Rate</p>
+                <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Attendance Rate</p>
               </div>
             </div>
           </div>

@@ -33,6 +33,13 @@ interface AttendanceState {
   teacherName: string;
   token: string | null;
   
+  // UI Settings
+  isDarkMode: boolean;
+  
+  // Hydration flag
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
+  
   // Current session
   selectedSection: string; // section name (display)
   currentSessionId: string;
@@ -52,6 +59,7 @@ interface AttendanceState {
   // Actions
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  toggleDarkMode: () => void;
   loadSections: () => Promise<void>;
   setSelectedSection: (sectionName: string) => Promise<void>;
   startAttendanceSession: () => void;
@@ -73,6 +81,8 @@ export const useAttendanceStore = create<AttendanceState>()(
       isAuthenticated: false,
       teacherName: '',
       token: null,
+      isDarkMode: false,
+      _hasHydrated: false,
       selectedSection: '',
       currentSessionId: '',
       sectionNameToId: {},
@@ -83,6 +93,14 @@ export const useAttendanceStore = create<AttendanceState>()(
       processedStudents: [],
 
       // Actions
+      setHasHydrated: (state: boolean) => {
+        set({ _hasHydrated: state });
+      },
+
+      toggleDarkMode: () => {
+        set({ isDarkMode: !get().isDarkMode });
+      },
+
       login: async (email: string, password: string) => {
         try {
           const result = await signIn({ email, password });
@@ -291,12 +309,15 @@ export const useAttendanceStore = create<AttendanceState>()(
     {
       name: 'attendance-storage',
       onRehydrateStorage: () => (state) => {
-        try {
-          const token = state?.token || null;
-          apiSetToken(token);
-        } catch {
-          // ignore
-        }
+        return () => {
+          try {
+            const token = state?.token || null;
+            apiSetToken(token);
+            state?.setHasHydrated(true);
+          } catch {
+            // ignore
+          }
+        };
       },
     }
   )

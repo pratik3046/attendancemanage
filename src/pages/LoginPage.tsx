@@ -19,14 +19,14 @@ const LoginPage: React.FC = () => {
       try {
         await loadSections();
       } catch {}
-      navigate('/sections');
+      window.location.href = '/sections';
     } else {
       setError('Invalid credentials');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center px-3 sm:px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center px-3 sm:px-4 py-6 page-transition">
       <div className="w-full max-w-md">
         {/* Logo Section - Mobile First */}
         <div className="text-center mb-6 sm:mb-8">

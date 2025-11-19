@@ -5,7 +5,7 @@ import { Users, ChevronRight } from 'lucide-react';
 
 const SectionsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { students, setSelectedSection, getSectionNames, loadSections } = useAttendanceStore();
+  const { students, setSelectedSection, getSectionNames, loadSections, isDarkMode } = useAttendanceStore();
 
   useEffect(() => {
     // Ensure sections are loaded if page is refreshed
@@ -23,8 +23,8 @@ const SectionsPage: React.FC = () => {
     <div className="space-y-6 sm:space-y-8">
       {/* Header - Mobile First */}
       <div className="text-center">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1.5 sm:mb-2">Select Class Section</h1>
-        <p className="text-sm sm:text-base text-gray-600">Choose a section to take attendance</p>
+        <h1 className={`text-2xl sm:text-3xl font-bold mb-1.5 sm:mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Select Class Section</h1>
+        <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-200' : 'text-gray-600'}`}>Choose a section to take attendance</p>
       </div>
 
       {/* Sections Grid - Mobile First */}
@@ -36,7 +36,11 @@ const SectionsPage: React.FC = () => {
             <button
               key={section}
               onClick={() => handleSectionSelect(section)}
-              className="group bg-white rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl active:shadow-md transition-all duration-300 transform active:scale-[0.98] p-4 sm:p-6 border border-gray-100 touch-manipulation"
+              className={`group rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl active:shadow-md transition-all duration-300 transform active:scale-[0.98] p-4 sm:p-6 border touch-manipulation ${
+                isDarkMode 
+                  ? 'bg-slate-800 border-slate-600 hover:bg-slate-700' 
+                  : 'bg-white border-gray-100'
+              }`}
             >
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
@@ -44,19 +48,23 @@ const SectionsPage: React.FC = () => {
                     <Users className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </div>
                   <div className="text-left min-w-0">
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">{section}</h3>
-                    <p className="text-gray-500 text-xs sm:text-sm">{studentCount} students</p>
+                    <h3 className={`text-lg sm:text-xl font-bold truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{section}</h3>
+                    <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>{studentCount} students</p>
                   </div>
                 </div>
-                <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors flex-shrink-0" />
+                <ChevronRight className={`h-5 w-5 transition-colors flex-shrink-0 ${
+                  isDarkMode 
+                    ? 'text-gray-400 group-hover:text-white' 
+                    : 'text-gray-400 group-hover:text-gray-600'
+                }`} />
               </div>
 
               <div className="text-left">
-                <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600 mb-1.5 sm:mb-2">
+                <div className={`flex items-center justify-between text-xs sm:text-sm mb-1.5 sm:mb-2 ${isDarkMode ? 'text-gray-200' : 'text-gray-600'}`}>
                   <span>Recent Attendance</span>
-                  <span className="text-green-600 font-medium">85%</span>
+                  <span className="text-green-500 font-medium">85%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2">
+                <div className={`w-full rounded-full h-1.5 sm:h-2 ${isDarkMode ? 'bg-slate-700' : 'bg-gray-200'}`}>
                   <div className="bg-gradient-to-r from-green-500 to-blue-500 h-1.5 sm:h-2 rounded-full w-[85%]"></div>
                 </div>
               </div>
@@ -67,36 +75,48 @@ const SectionsPage: React.FC = () => {
 
       {/* Quick Stats - Mobile First */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-8 sm:mt-12">
-        <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-lg border border-gray-100">
+        <div className={`rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-lg border ${
+          isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-100'
+        }`}>
           <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600" />
+            <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+              isDarkMode ? 'bg-blue-500/20' : 'bg-blue-100'
+            }`}>
+              <Users className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
             </div>
-            <h3 className="font-semibold text-sm sm:text-base text-gray-900">Total Sections</h3>
+            <h3 className={`font-semibold text-sm sm:text-base ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Total Sections</h3>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-blue-600">{sections.length}</p>
+          <p className={`text-xl sm:text-2xl font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>{sections.length}</p>
         </div>
 
-        <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-lg border border-gray-100">
+        <div className={`rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-lg border ${
+          isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-100'
+        }`}>
           <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600" />
+            <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+              isDarkMode ? 'bg-green-500/20' : 'bg-green-100'
+            }`}>
+              <Users className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
             </div>
-            <h3 className="font-semibold text-sm sm:text-base text-gray-900">Total Students</h3>
+            <h3 className={`font-semibold text-sm sm:text-base ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Total Students</h3>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-green-600">
+          <p className={`text-xl sm:text-2xl font-bold ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
             {Object.values(students).reduce((sum, section) => sum + section.length, 0)}
           </p>
         </div>
 
-        <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-lg border border-gray-100">
+        <div className={`rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-lg border ${
+          isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-100'
+        }`}>
           <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-600" />
+            <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+              isDarkMode ? 'bg-purple-500/20' : 'bg-purple-100'
+            }`}>
+              <Users className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
             </div>
-            <h3 className="font-semibold text-sm sm:text-base text-gray-900">Avg. Class Size</h3>
+            <h3 className={`font-semibold text-sm sm:text-base ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Avg. Class Size</h3>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-purple-600">
+          <p className={`text-xl sm:text-2xl font-bold ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>
             {Math.round(Object.values(students).reduce((sum, section) => sum + section.length, 0) / sections.length)}
           </p>
         </div>

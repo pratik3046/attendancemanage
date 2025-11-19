@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAttendanceStore } from './store/attendanceStore';
 import Layout from './components/Layout';
@@ -8,32 +7,72 @@ import AttendancePage from './pages/AttendancePage';
 import ReportsPage from './pages/ReportsPage';
 import HistoryPage from './pages/HistoryPage';
 
-function App() {
+// Protected Route wrapper
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAttendanceStore((state) => state.isAuthenticated);
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return <>{children}</>;
+}
 
+// Public Route wrapper (redirects to sections if already authenticated)
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const isAuthenticated = useAttendanceStore((state) => state.isAuthenticated);
+  
+  if (isAuthenticated) {
+    return <Navigate to="/sections" replace />;
+  }
+  
+  return <>{children}</>;
+}
+
+function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route 
             index 
-            element={isAuthenticated ? <Navigate to="/sections" replace /> : <LoginPage />} 
+            element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            } 
           />
           <Route
             path="/sections"
-            element={isAuthenticated ? <SectionsPage /> : <Navigate to="/" replace />}
+            element={
+              <ProtectedRoute>
+                <SectionsPage />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/attendance"
-            element={isAuthenticated ? <AttendancePage /> : <Navigate to="/" replace />}
+            element={
+              <ProtectedRoute>
+                <AttendancePage />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/reports"
-            element={isAuthenticated ? <ReportsPage /> : <Navigate to="/" replace />}
+            element={
+              <ProtectedRoute>
+                <ReportsPage />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/history"
-            element={isAuthenticated ? <HistoryPage /> : <Navigate to="/" replace />}
+            element={
+              <ProtectedRoute>
+                <HistoryPage />
+              </ProtectedRoute>
+            }
           />
         </Route>
       </Routes>

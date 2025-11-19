@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, createRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAttendanceStore } from '../store/attendanceStore';
 import TinderCard from 'react-tinder-card';
 import { Check, X, RotateCcw, ArrowLeft, Users, UserCheck, UserX } from 'lucide-react';
+
+// Define the specific interface for the TinderCard ref
+interface TinderCardRef {
+  swipe: (dir: 'left' | 'right' | 'up' | 'down') => Promise<void>;
+  restoreCard: () => Promise<void>;
+}
 
 const AttendancePage: React.FC = () => {
   const navigate = useNavigate();
@@ -14,23 +20,34 @@ const AttendancePage: React.FC = () => {
     startAttendanceSession,
     markAttendance,
     submitAttendanceSession,
+    isDarkMode,
   } = useAttendanceStore();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
 
-  const sectionStudents = students[selectedSection] || [];
+  // Get students safely
+  const sectionStudents = useMemo(() => students[selectedSection] || [], [students, selectedSection]);
+
+
+  // Using the object itself in the dependency array causes refs to regenerate on every render.
+  const childRefs = useMemo(
+    () =>
+      Array(sectionStudents.length)
+        .fill(0)
+        .map(() => createRef<TinderCardRef>()),
+    [sectionStudents.length] 
+  );
 
   useEffect(() => {
     if (!selectedSection) {
-      navigate('/sections');
       return;
     }
     startAttendanceSession();
-  }, [selectedSection, navigate, startAttendanceSession]);
+  }, [selectedSection, startAttendanceSession]);
 
   useEffect(() => {
-    setIsComplete(processedStudents.length >= sectionStudents.length);
+    setIsComplete(processedStudents.length >= sectionStudents.length && sectionStudents.length > 0);
   }, [processedStudents.length, sectionStudents.length]);
 
   const handleSwipe = (direction: string, studentId: string) => {
@@ -39,9 +56,16 @@ const AttendancePage: React.FC = () => {
     setCurrentIndex((prev) => prev + 1);
   };
 
-  const handleButtonClick = (studentId: string, status: 'present' | 'absent') => {
-    markAttendance(studentId, status);
-    setCurrentIndex((prev) => prev + 1);
+  
+  // Calling ref.swipe() triggers the visual animation, which AUTOMATICALLY triggers onSwipe.
+  // We do not need to call handleSwipe manually here, otherwise it runs twice.
+  const handleButtonClick = async (status: 'present' | 'absent', index: number) => {
+    const direction = status === 'present' ? 'right' : 'left';
+    const ref = childRefs[index]?.current;
+
+    if (ref) {
+      await ref.swipe(direction);
+    }
   };
 
   const handleSubmit = async () => {
@@ -54,50 +78,77 @@ const AttendancePage: React.FC = () => {
   const remainingCount = sectionStudents.length - processedStudents.length;
 
   if (!selectedSection) {
-    return null;
+    return (
+      <div className="max-w-2xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8 py-8 text-center">
+        <div className={`rounded-2xl shadow-xl p-6 sm:p-10 border ${
+          isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-100'
+        }`}>
+          <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+            isDarkMode ? 'bg-blue-500/20' : 'bg-blue-50'
+          }`}>
+            <Users className="h-7 w-7 text-blue-500" />
+          </div>
+          <h2 className={`text-2xl font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Choose a class first</h2>
+          <p className={`mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            Please select a section from the sections page before taking attendance.
+          </p>
+          <button
+            onClick={() => navigate('/sections')}
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow-md hover:from-blue-700 hover:to-purple-700 active:scale-95 transition-all"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            Go to Sections
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (isComplete) {
     return (
-      <div className="max-w-2xl mx-auto text-center space-y-6 sm:space-y-8">
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-5 sm:p-8">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-            <Check className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
+      <div className="max-w-2xl mx-auto text-center space-y-6 sm:space-y-8 px-4 py-6">
+        <div className={`rounded-2xl shadow-xl p-6 sm:p-8 ${isDarkMode ? 'bg-slate-800' : 'bg-white'}`}>
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${isDarkMode ? 'bg-green-500/20' : 'bg-green-100'}`}>
+            <Check className="h-8 w-8 text-green-600" />
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Attendance Complete!</h2>
-          <p className="text-sm sm:text-base text-gray-600 mb-5 sm:mb-6">You have marked attendance for all students in {selectedSection}.</p>
+          <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Attendance Complete!</h2>
+          <p className={`mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>You have marked attendance for all students in {selectedSection}.</p>
 
-          <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-6">
-            <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
-              <p className="text-xl sm:text-2xl font-bold text-blue-600">{sectionStudents.length}</p>
-              <p className="text-xs sm:text-sm text-blue-600">Total</p>
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-blue-500/20' : 'bg-blue-50'}`}>
+              <p className="text-2xl font-bold text-blue-600">{sectionStudents.length}</p>
+              <p className="text-sm text-blue-600 font-medium">Total</p>
             </div>
-            <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
-              <p className="text-xl sm:text-2xl font-bold text-green-600">{presentCount}</p>
-              <p className="text-xs sm:text-sm text-green-600">Present</p>
+            <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-green-500/20' : 'bg-green-50'}`}>
+              <p className="text-2xl font-bold text-green-600">{presentCount}</p>
+              <p className="text-sm text-green-600 font-medium">Present</p>
             </div>
-            <div className="bg-red-50 p-3 sm:p-4 rounded-lg">
-              <p className="text-xl sm:text-2xl font-bold text-red-600">{absentCount}</p>
-              <p className="text-xs sm:text-sm text-red-600">Absent</p>
+            <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-red-500/20' : 'bg-red-50'}`}>
+              <p className="text-2xl font-bold text-red-600">{absentCount}</p>
+              <p className="text-sm text-red-600 font-medium">Absent</p>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => {
                 setCurrentIndex(0);
                 setIsComplete(false);
               }}
-              className="flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors text-sm sm:text-base touch-manipulation"
+              className={`flex items-center justify-center gap-2 px-6 py-3 border rounded-lg transition-colors font-medium ${
+                isDarkMode 
+                  ? 'border-slate-600 text-gray-300 hover:bg-slate-700 active:bg-slate-600' 
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50 active:bg-gray-100'
+              }`}
             >
-              <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5" />
+              <RotateCcw className="h-5 w-5" />
               <span>Review Again</span>
             </button>
             <button
               onClick={handleSubmit}
-              className="flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 active:from-green-800 active:to-blue-800 transition-all transform active:scale-[0.98] text-sm sm:text-base touch-manipulation"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 active:from-green-800 active:to-blue-800 transition-all transform active:scale-95 font-medium shadow-md"
             >
-              <Check className="h-4 w-4 sm:h-5 sm:w-5" />
+              <Check className="h-5 w-5" />
               <span>Submit Attendance</span>
             </button>
           </div>
@@ -107,141 +158,165 @@ const AttendancePage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
-      {/* Header - Mobile First */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="max-w-4xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8 pb-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-4">
         <button
           onClick={() => navigate('/sections')}
-          className="flex items-center gap-1.5 sm:gap-2 text-gray-600 hover:text-gray-900 active:text-black transition-colors self-start touch-manipulation"
+          className={`flex items-center gap-2 transition-colors self-start ${
+            isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+          }`}
         >
-          <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-          <span className="text-sm sm:text-base">Back to Sections</span>
+          <ArrowLeft className="h-5 w-5" />
+          <span className="font-medium">Back to Sections</span>
+          
         </button>
-        <h1 className="text-lg sm:text-2xl font-bold text-gray-900">{selectedSection} Attendance</h1>
-        <div className="text-left sm:text-right">
-          <p className="text-xs sm:text-sm text-gray-600">
-            {processedStudents.length} of {sectionStudents.length} students
+        <div className="flex flex-col items-start sm:items-end">
+          <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{selectedSection} Attendance</h1>
+          <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            {processedStudents.length} of {sectionStudents.length} processed
           </p>
         </div>
       </div>
 
-      {/* Stats - Mobile First Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
-        <div className="bg-white p-3 sm:p-4 rounded-lg shadow-md border border-gray-100">
-          <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
-            <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 flex-shrink-0" />
-            <span className="text-xs sm:text-sm font-medium text-gray-600">Total</span>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className={`p-4 rounded-lg shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-100'}`}>
+          <div className="flex items-center gap-2 mb-1">
+            <Users className="h-4 w-4 text-blue-600" />
+            <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Total</span>
           </div>
-          <p className="text-lg sm:text-xl font-bold text-blue-600">{sectionStudents.length}</p>
+          <p className="text-2xl font-bold text-blue-600">{sectionStudents.length}</p>
         </div>
 
-        <div className="bg-white p-3 sm:p-4 rounded-lg shadow-md border border-gray-100">
-          <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
-            <UserCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 flex-shrink-0" />
-            <span className="text-xs sm:text-sm font-medium text-gray-600">Present</span>
+        <div className={`p-4 rounded-lg shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-100'}`}>
+          <div className="flex items-center gap-2 mb-1">
+            <UserCheck className="h-4 w-4 text-green-600" />
+            <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Present</span>
           </div>
-          <p className="text-lg sm:text-xl font-bold text-green-600">{presentCount}</p>
+          <p className="text-2xl font-bold text-green-600">{presentCount}</p>
         </div>
 
-        <div className="bg-white p-3 sm:p-4 rounded-lg shadow-md border border-gray-100">
-          <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
-            <UserX className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-600 flex-shrink-0" />
-            <span className="text-xs sm:text-sm font-medium text-gray-600">Absent</span>
+        <div className={`p-4 rounded-lg shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-100'}`}>
+          <div className="flex items-center gap-2 mb-1">
+            <UserX className="h-4 w-4 text-red-600" />
+            <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Absent</span>
           </div>
-          <p className="text-lg sm:text-xl font-bold text-red-600">{absentCount}</p>
+          <p className="text-2xl font-bold text-red-600">{absentCount}</p>
         </div>
 
-        <div className="bg-white p-3 sm:p-4 rounded-lg shadow-md border border-gray-100">
-          <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
-            <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-600 flex-shrink-0" />
-            <span className="text-xs sm:text-sm font-medium text-gray-600">Remaining</span>
+        <div className={`p-4 rounded-lg shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-100'}`}>
+          <div className="flex items-center gap-2 mb-1">
+            <Users className="h-4 w-4 text-purple-600" />
+            <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Remaining</span>
           </div>
-          <p className="text-lg sm:text-xl font-bold text-purple-600">{remainingCount}</p>
+          <p className="text-2xl font-bold text-purple-600">{remainingCount}</p>
         </div>
       </div>
 
-      {/* Progress Bar - Mobile First */}
-      <div className="bg-white p-3 sm:p-4 rounded-lg shadow-md">
-        <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-1.5 sm:mb-2">
+      {/* Progress Bar */}
+      <div className={`p-4 rounded-lg shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-100'}`}>
+        <div className={`flex justify-between text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
           <span>Progress</span>
-          <span>{Math.round((processedStudents.length / sectionStudents.length) * 100)}%</span>
+          <span>{sectionStudents.length > 0 ? Math.round((processedStudents.length / sectionStudents.length) * 100) : 0}%</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3">
+        <div className={`w-full rounded-full h-2.5 overflow-hidden ${isDarkMode ? 'bg-slate-700' : 'bg-gray-100'}`}>
           <div
-            className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 sm:h-3 rounded-full transition-all duration-300"
-            style={{ width: `${(processedStudents.length / sectionStudents.length) * 100}%` }}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 h-full rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${sectionStudents.length > 0 ? (processedStudents.length / sectionStudents.length) * 100 : 0}%` }}
           ></div>
         </div>
       </div>
 
-      {/* Card Stack - Mobile First Responsive */}
-      <div className="relative h-[400px] sm:h-96 flex justify-center items-center">
-        <div className="relative w-full max-w-[280px] sm:max-w-[320px] md:w-80 h-[360px] sm:h-80">
+      {/* Card Stack */}
+      <div className="relative h-[450px] w-full flex justify-center items-center overflow-hidden py-4">
+        <div className="relative w-full max-w-sm h-96">
           {sectionStudents.map((student, index) => {
             const isVisible = index >= currentIndex && index < currentIndex + 3;
             const zIndex = sectionStudents.length - index;
-            const scale = index === currentIndex ? 1 : index === currentIndex + 1 ? 0.95 : 0.9;
-            const translateY = (index - currentIndex) * 8;
+            const depth = index - currentIndex;
+            const isTopCard = depth === 0;
+            const scale = isTopCard ? 1 : depth === 1 ? 0.98 : 0.96;
+            const translateY = depth * 6;
+            const rotate = isTopCard ? 0 : depth === 1 ? -2 : 2;
+            const opacity = 1;
 
             if (!isVisible) return null;
 
             return (
-              <TinderCard
-                key={student.id}
-                onSwipe={(dir) => handleSwipe(dir, student.id)}
-                preventSwipe={['up', 'down']}
-                className="absolute inset-0"
-              >
-                <div
-                  className="w-full h-full bg-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-100 p-5 sm:p-8 flex flex-col justify-center items-center cursor-pointer select-none transition-transform duration-200 touch-manipulation"
-                  style={{
-                    zIndex,
-                    transform: `scale(${scale}) translateY(${translateY}px)`,
-                  }}
+              <div key={student.id} className="absolute inset-0 flex items-center justify-center touch-pan-x">
+                <TinderCard
+                  ref={childRefs[index]}
+                  onSwipe={(dir: string) => handleSwipe(dir, student.id)}
+                  preventSwipe={['up', 'down']}
+                  swipeRequirementType="position"
+                  className="w-full h-full flex items-center justify-center"
                 >
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-3 sm:mb-4">
-                    <span className="text-xl sm:text-2xl font-bold text-white">
-                      {student.name.split(' ').map(n => n[0]).join('')}
+                  <div
+                    className={`w-full h-full rounded-3xl shadow-2xl border p-6 flex flex-col justify-center items-center transition-all duration-300 select-none cursor-grab active:cursor-grabbing touch-pan-x ${
+                      isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-100'
+                    }`}
+                    style={{
+                      zIndex,
+                      transform: `translateY(${translateY}px) scale(${scale}) rotate(${rotate}deg)`,
+                      opacity,
+                      pointerEvents: isTopCard ? 'auto' : 'none',
+                    }}
+                  >
+                  <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
+                    <span className="text-3xl font-bold text-white tracking-wider">
+                      {student.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                     </span>
                   </div>
 
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1.5 sm:mb-2 text-center px-2">{student.name}</h3>
-                  <p className="text-sm sm:text-base text-gray-600 mb-5 sm:mb-6">Roll No: {student.rollNumber}</p>
+                  <h3 className={`text-2xl font-bold mb-2 text-center ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{student.name}</h3>
+                  <p className={`mb-8 font-medium px-4 py-1 rounded-full ${isDarkMode ? 'text-gray-300 bg-slate-700' : 'text-gray-500 bg-gray-50'}`}>
+                    Roll No: {student.rollNumber}
+                  </p>
 
-                  <div className="flex gap-3 sm:gap-4">
+                  <div className="flex gap-4 w-full px-4 mt-auto">
                     <button
-                      onClick={() => handleButtonClick(student.id, 'absent')}
-                      className="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 active:bg-red-700 transition-colors transform active:scale-95 text-sm sm:text-base touch-manipulation"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleButtonClick('absent', index);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-50 text-red-600 hover:bg-red-100 active:bg-red-200 rounded-xl font-semibold transition-colors touch-manipulation"
                     >
-                      <X className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <X className="h-5 w-5" />
                       <span>Absent</span>
                     </button>
                     <button
-                      onClick={() => handleButtonClick(student.id, 'present')}
-                      className="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 active:bg-green-700 transition-colors transform active:scale-95 text-sm sm:text-base touch-manipulation"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleButtonClick('present', index);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 bg-green-50 text-green-600 hover:bg-green-100 active:bg-green-200 rounded-xl font-semibold transition-colors touch-manipulation"
                     >
-                      <Check className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <Check className="h-5 w-5" />
                       <span>Present</span>
                     </button>
                   </div>
-                </div>
-              </TinderCard>
+                  </div>
+                </TinderCard>
+              </div>
             );
           })}
 
           {currentIndex >= sectionStudents.length && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <p className="text-gray-500 text-base sm:text-lg">All students processed!</p>
+            <div className={`absolute inset-0 flex items-center justify-center rounded-2xl border-2 border-dashed ${isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-gray-50 border-gray-200'}`}>
+              <div className="text-center">
+                <p className="text-gray-400 text-lg font-medium">No more students</p>
+                <p className="text-gray-400 text-sm">Please submit attendance</p>
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Instructions - Mobile First */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
-        <p className="text-blue-800 text-center text-xs sm:text-sm">
-          <strong>Swipe right</strong> for Present or <strong>swipe left</strong> for Absent.
-          You can also use the buttons below each card.
+      {/* Swipe Instructions */}
+      <div className={`border rounded-lg p-4 text-center ${isDarkMode ? 'bg-blue-500/20 border-blue-500/30' : 'bg-blue-50 border-blue-100'}`}>
+        <p className={`text-sm ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+          <span className="font-bold">Swipe Right</span> for Present • <span className="font-bold">Swipe Left</span> for Absent
         </p>
       </div>
     </div>
