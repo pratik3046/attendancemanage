@@ -47,24 +47,53 @@ const AttendancePage: React.FC = () => {
   }, [selectedSection, startAttendanceSession]);
 
   useEffect(() => {
-    setIsComplete(processedStudents.length >= sectionStudents.length && sectionStudents.length > 0);
+    const allProcessed = processedStudents.length >= sectionStudents.length && sectionStudents.length > 0;
+    setIsComplete(allProcessed);
   }, [processedStudents.length, sectionStudents.length]);
 
   const handleSwipe = (direction: string, studentId: string) => {
     const status = direction === 'right' ? 'present' : 'absent';
     markAttendance(studentId, status);
-    setCurrentIndex((prev) => prev + 1);
+    setCurrentIndex((prev) => {
+      const newIndex = prev + 1;
+      // Check if we've processed all students
+      if (newIndex >= sectionStudents.length) {
+        setTimeout(() => setIsComplete(true), 300);
+      }
+      return newIndex;
+    });
   };
 
   
-  // Calling ref.swipe() triggers the visual animation, which AUTOMATICALLY triggers onSwipe.
-  // We do not need to call handleSwipe manually here, otherwise it runs twice.
-  const handleButtonClick = async (status: 'present' | 'absent', index: number) => {
-    const direction = status === 'present' ? 'right' : 'left';
-    const ref = childRefs[index]?.current;
-
-    if (ref) {
-      await ref.swipe(direction);
+  const handleButtonClick = (status: 'present' | 'absent', cardIndex: number) => {
+    // Only process if this is the current top card
+    if (cardIndex !== currentIndex) {
+      console.log('Ignoring click on non-top card. Current:', currentIndex, 'Clicked:', cardIndex);
+      return;
+    }
+    
+    const student = sectionStudents[cardIndex];
+    if (!student) {
+      console.log('No student found at index:', cardIndex);
+      return;
+    }
+    
+    console.log('Processing:', student.name, 'Status:', status, 'Index:', cardIndex);
+    
+    // Mark attendance
+    markAttendance(student.id, status);
+    
+    // Advance to next card
+    const newIndex = currentIndex + 1;
+    console.log('Advancing from', currentIndex, 'to', newIndex);
+    setCurrentIndex(newIndex);
+    
+    // Check if we're done
+    if (newIndex >= sectionStudents.length) {
+      console.log('All', sectionStudents.length, 'students processed!');
+      setTimeout(() => {
+        setIsComplete(true);
+      }, 300);
     }
   };
 
@@ -134,6 +163,7 @@ const AttendancePage: React.FC = () => {
               onClick={() => {
                 setCurrentIndex(0);
                 setIsComplete(false);
+                startAttendanceSession();
               }}
               className={`flex items-center justify-center gap-2 px-6 py-3 border rounded-lg transition-colors font-medium ${
                 isDarkMode 
@@ -274,23 +304,52 @@ const AttendancePage: React.FC = () => {
                     Roll No: {student.rollNumber}
                   </p>
 
-                  <div className="flex gap-4 w-full px-4 mt-auto">
+                  <div 
+                    className="flex gap-4 w-full px-4 mt-auto"
+                    style={{ 
+                      pointerEvents: 'auto',
+                      touchAction: 'auto'
+                    }}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => e.stopPropagation()}
+                  >
                     <button
+                      type="button"
+                      onTouchEnd={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Absent touched for index:', index, 'student:', student.name);
+                        handleButtonClick('absent', index);
+                      }}
                       onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
+                        console.log('Absent clicked for index:', index, 'student:', student.name);
                         handleButtonClick('absent', index);
                       }}
                       className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-50 text-red-600 hover:bg-red-100 active:bg-red-200 rounded-xl font-semibold transition-colors touch-manipulation"
+                      style={{ touchAction: 'manipulation' }}
                     >
                       <X className="h-5 w-5" />
                       <span>Absent</span>
                     </button>
                     <button
+                      type="button"
+                      onTouchEnd={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Present touched for index:', index, 'student:', student.name);
+                        handleButtonClick('present', index);
+                      }}
                       onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
+                        console.log('Present clicked for index:', index, 'student:', student.name);
                         handleButtonClick('present', index);
                       }}
                       className="flex-1 flex items-center justify-center gap-2 py-3 bg-green-50 text-green-600 hover:bg-green-100 active:bg-green-200 rounded-xl font-semibold transition-colors touch-manipulation"
+                      style={{ touchAction: 'manipulation' }}
                     >
                       <Check className="h-5 w-5" />
                       <span>Present</span>

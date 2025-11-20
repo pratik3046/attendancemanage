@@ -99,24 +99,13 @@ const Layout: React.FC = () => {
         <div className="w-full max-w-7xl mx-auto">
           {/* Top Bar - Logo and User Info */}
           <div className="flex justify-between items-center px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-            {/* Logo */}
-            <div className="flex flex-col min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent truncate">
-                AttendanceTracker
-              </h1>
-              <p className={`hidden sm:block text-xs truncate ${
-                isDarkMode ? 'text-slate-400' : 'text-gray-500'
-              }`}>
-                {formatDateTime()}
-              </p>
-            </div>
-
-            {/* User Info & Actions */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            {/* Mobile: Menu + Heading + Theme Toggle */}
+            <div className="flex items-center gap-3 sm:gap-0 min-w-0 flex-1">
+              {/* Mobile Menu Button */}
               <motion.button
                 type="button"
                 onClick={() => setIsMobileNavOpen((prev) => !prev)}
-                className={`flex items-center justify-center rounded-xl p-2 sm:hidden ${
+                className={`flex sm:hidden items-center justify-center rounded-xl p-2 ${
                   isDarkMode 
                     ? 'text-white hover:bg-slate-800 active:bg-slate-700' 
                     : 'text-gray-700 hover:bg-gray-200 active:bg-gray-300'
@@ -152,6 +141,61 @@ const Layout: React.FC = () => {
                   </motion.div>
                 </div>
               </motion.button>
+
+              {/* Desktop: Logo with Date */}
+              <div className="hidden sm:flex flex-col min-w-0">
+                <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent truncate">
+                  AttendanceTracker
+                </h1>
+                <p className={`text-xs truncate ${
+                  isDarkMode ? 'text-slate-400' : 'text-gray-500'
+                }`}>
+                  {formatDateTime()}
+                </p>
+              </div>
+
+              {/* Mobile: Heading + Theme Toggle */}
+              <div className="flex sm:hidden items-center justify-between min-w-0 flex-1">
+                <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent truncate">
+                  AttendanceTracker
+                </h1>
+                {/* Mobile Theme Toggle Pill */}
+                <motion.button
+                  onClick={toggleDarkMode}
+                  className="flex items-center justify-center rounded-full p-2 transition-all duration-300 bg-stone-100 hover:bg-stone-200 active:bg-stone-300 flex-shrink-0 ml-4"
+                  aria-label="Toggle dark mode"
+                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.1 }}
+                >
+                  <AnimatePresence mode="wait">
+                    {isDarkMode ? (
+                      <motion.div
+                        key="sun-mobile"
+                        initial={{ rotate: -90, scale: 0 }}
+                        animate={{ rotate: 0, scale: 1 }}
+                        exit={{ rotate: 90, scale: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <Sun className="h-4 w-4 text-amber-500" />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="moon-mobile"
+                        initial={{ rotate: 90, scale: 0 }}
+                        animate={{ rotate: 0, scale: 1 }}
+                        exit={{ rotate: -90, scale: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <Moon className="h-4 w-4 text-indigo-600" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+              </div>
+            </div>
+
+            {/* User Info & Actions */}
+            <div className="flex items-center gap-2 sm:gap-3">
               <motion.button
                 onClick={toggleDarkMode}
                 className={`hidden sm:flex items-center justify-center rounded-xl p-2.5 ${
@@ -333,22 +377,6 @@ const Layout: React.FC = () => {
                   <div className={`w-full pt-2 border-t ${isDarkMode ? 'border-slate-600' : 'border-gray-200'}`}>
                     <p className={`text-xs ${isDarkMode ? 'text-gray-200' : 'text-gray-600'}`}>{formatDateTime()}</p>
                   </div>
-                  <motion.button
-                    onClick={() => {
-                      toggleDarkMode();
-                      handleMobileNavClick();
-                    }}
-                    className={`w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 ${
-                      isDarkMode 
-                        ? 'bg-slate-800 text-amber-400 hover:bg-slate-700 hover:shadow-lg hover:text-amber-300' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                    whileTap={{ scale: 0.95 }}
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                    <span className="font-medium">{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
-                  </motion.button>
                 </motion.div>
               
                 {navItems.map((item, index) => {
